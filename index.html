@@ -3,48 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <title>VAST 2019 MC2</title>
+    <script src="d3.v7.min.js"></script>
 </head>
 <body>
-<script src="d3.v7.min.js"></script>
-<script>
-    // Authored by Julia Santos Nothaft and Patrick Feeney
-    async function loadCSV(path, row_conv)
-    {
-        const response = await fetch(path);
-        return d3.csvParse(await response.text(), row_conv);
-    }
     
-    async function main()
-    {
-        static_locs = await loadCSV("MC2/data/StaticSensorLocations.csv",
-            (d) => { return {
-                id: parseInt(d["Sensor-id"]),
-                lat: parseFloat(d.Lat),
-                long: parseFloat(d.Long),
-            }; }
-        );
-        static_data = await loadCSV("MC2/data/StaticSensorReadings.csv",
-            (d) => { return {
-                time: new Date(d.Timestamp),
-                id: parseInt(d["Sensor-id"]),
-                val: parseFloat(d.Value),
-                lat: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).lat,
-                long: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).long,
-            }; }
-        );
-        mobile_data = await loadCSV("MC2/data/MobileSensorReadings.csv",
-            (d) => { return {
-                time: new Date(d.Timestamp),
-                id: parseInt(d["Sensor-id"]),
-                user: d[" User-id"].trim(),
-                lat: parseFloat(d.Lat),
-                long: parseFloat(d.Long),
-                val: parseFloat(d.Value),
-            }; }
-        );
-    }
+    <script>
+        // Authored by Julia Santos Nothaft and Patrick Feeney
+        async function loadCSV(path, row_conv)
+        {
+            const response = await fetch(path);
+            return d3.csvParse(await response.text(), row_conv);
+        }
+        
+        async function main()
+        {
+            // load CSVs
+            // static_locs = await loadCSV("MC2/data/StaticSensorLocations.csv",
+            //     (d) => { return {
+            //         id: parseInt(d["Sensor-id"]),
+            //         lat: parseFloat(d.Lat),
+            //         long: parseFloat(d.Long),
+            //     }; }
+            // );
+            // static_data = await loadCSV("MC2/data/StaticSensorReadings.csv",
+            //     (d) => { return {
+            //         time: new Date(d.Timestamp),
+            //         id: parseInt(d["Sensor-id"]),
+            //         val: parseFloat(d.Value),
+            //         lat: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).lat,
+            //         long: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).long,
+            //     }; }
+            // );
+            // mobile_data = await loadCSV("MC2/data/MobileSensorReadings.csv",
+            //     (d) => { return {
+            //         time: new Date(d.Timestamp),
+            //         id: parseInt(d["Sensor-id"]),
+            //         user: d[" User-id"].trim(),
+            //         lat: parseFloat(d.Lat),
+            //         long: parseFloat(d.Long),
+            //         val: parseFloat(d.Value),
+            //     }; }
+            // );
+            // set spacing
+            img_width = 995;
+            img_height = 823;
+            margin = ({top: 40, right: 40, bottom: 40, left: 40});
+            width = margin.left + img_width + margin.right;
+            height = margin.top + img_height + margin.bottom;
+            // debug data
+            data = [
+                {
+                    x: -120.0,
+                    y: 0.0,
+                },
+                {
+                    x: -119.711751,
+                    y: 0.238585,
+                },
+            ]
+            // create scales
+            xScale = d3.scaleLinear()
+                .domain([-120.0, -119.711751])
+                .range([margin.left, margin.left + img_width])
+            yScale = d3.scaleLinear()
+                .domain([0.0, 0.238585])
+                .range([img_height + margin.top, margin.top])
+            // TODO colorScale
+            // create axes
+            yAxis = g => g
+                .attr("transform", `translate(${margin.left},0)`)
+                .call(d3.axisLeft(yScale));
+            xAxis = g => g
+                .attr("transform", `translate(0,${img_height + margin.top})`)
+                .call(d3.axisBottom(xScale));
+            // create the chart
+            chart = () => {
+                const svg = d3.create("svg")
+                    .attr("viewBox", [0, 0, width, height]);
 
-    main();
-</script>
+                svg.append("svg:image")
+                    .attr("xlink:href", "MC2/data/StHimarkLabeledMap.png")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+                svg.append("g")
+                    .call(xAxis);
+    
+                svg.append("g")
+                    .call(yAxis);
+    
+                svg.append("g")
+                    .attr("stroke-width", 1.5)
+                    .attr("font-family", "sans-serif")
+                    .attr("font-size", 10)
+                    .selectAll("path")
+                    .data(data)
+                    .join("path")
+                    .attr("transform", d => `translate(${xScale(d.x)},${yScale(d.y)})`)
+                    .attr("d", (d) => d3.symbol().type(d3.symbolCircle)());
+    
+                return svg.node();
+            }
+            d3.select("body").append("div").html(chart().outerHTML);
+        }
+    
+        main();
+    </script>
 </body>
 </html>
