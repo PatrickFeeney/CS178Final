@@ -16,11 +16,20 @@
     
     async function main()
     {
+        static_locs = await loadCSV("MC2/data/StaticSensorLocations.csv",
+            (d) => { return {
+                id: parseInt(d["Sensor-id"]),
+                lat: parseFloat(d.Lat),
+                long: parseFloat(d.Long),
+            }; }
+        );
         static_data = await loadCSV("MC2/data/StaticSensorReadings.csv",
             (d) => { return {
                 time: new Date(d.Timestamp),
                 id: parseInt(d["Sensor-id"]),
                 val: parseFloat(d.Value),
+                lat: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).lat,
+                long: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).long,
             }; }
         );
         mobile_data = await loadCSV("MC2/data/MobileSensorReadings.csv",
