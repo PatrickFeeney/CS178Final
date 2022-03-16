@@ -8,17 +8,31 @@
 <script src="d3.v7.min.js"></script>
 <script>
     // Authored by Julia Santos Nothaft and Patrick Feeney
-    async function loadCSV(path)
+    async function loadCSV(path, row_conv)
     {
         const response = await fetch(path);
-        return d3.csvParse(await response.text());
+        return d3.csvParse(await response.text(), row_conv);
     }
     
     async function main()
     {
-        // autoType still resulting in strings? Due to malformed rows maybe?
-        static_data = await loadCSV("MC2/data/StaticSensorReadings.csv", d3.autoType);
-        mobile_data = await loadCSV("MC2/data/MobileSensorReadings.csv", d3.autoType);
+        static_data = await loadCSV("MC2/data/StaticSensorReadings.csv",
+            (d) => { return {
+                time: new Date(d.Timestamp),
+                id: parseInt(d["Sensor-id"]),
+                val: parseFloat(d.Value),
+            }; }
+        );
+        mobile_data = await loadCSV("MC2/data/MobileSensorReadings.csv",
+            (d) => { return {
+                time: new Date(d.Timestamp),
+                id: parseInt(d["Sensor-id"]),
+                user: d[" User-id"].trim(),
+                lat: parseFloat(d.Lat),
+                long: parseFloat(d.Long),
+                val: parseFloat(d.Value),
+            }; }
+        );
     }
 
     main();
