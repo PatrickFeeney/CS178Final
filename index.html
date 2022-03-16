@@ -18,22 +18,22 @@
         async function main()
         {
             // load CSVs
-            // static_locs = await loadCSV("MC2/data/StaticSensorLocations.csv",
-            //     (d) => { return {
-            //         id: parseInt(d["Sensor-id"]),
-            //         lat: parseFloat(d.Lat),
-            //         long: parseFloat(d.Long),
-            //     }; }
-            // );
-            // static_data = await loadCSV("MC2/data/StaticSensorReadings.csv",
-            //     (d) => { return {
-            //         time: new Date(d.Timestamp),
-            //         id: parseInt(d["Sensor-id"]),
-            //         val: parseFloat(d.Value),
-            //         lat: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).lat,
-            //         long: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).long,
-            //     }; }
-            // );
+            static_locs = await loadCSV("MC2/data/StaticSensorLocations.csv",
+                (d) => { return {
+                    id: parseInt(d["Sensor-id"]),
+                    lat: parseFloat(d.Lat),
+                    long: parseFloat(d.Long),
+                }; }
+            );
+            static_data = await loadCSV("MC2/data/StaticSensorReadings.csv",
+                (d) => { return {
+                    time: new Date(d.Timestamp),
+                    id: parseInt(d["Sensor-id"]),
+                    val: parseFloat(d.Value),
+                    lat: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).lat,
+                    long: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).long,
+                }; }
+            );
             // mobile_data = await loadCSV("MC2/data/MobileSensorReadings.csv",
             //     (d) => { return {
             //         time: new Date(d.Timestamp),
@@ -50,17 +50,6 @@
             margin = ({top: 40, right: 40, bottom: 40, left: 40});
             width = margin.left + img_width + margin.right;
             height = margin.top + img_height + margin.bottom;
-            // debug data
-            data = [
-                {
-                    x: -120.0,
-                    y: 0.0,
-                },
-                {
-                    x: -119.711751,
-                    y: 0.238585,
-                },
-            ]
             // create scales
             xScale = d3.scaleLinear()
                 .domain([-120.0, -119.711751])
@@ -96,10 +85,10 @@
                     .attr("font-family", "sans-serif")
                     .attr("font-size", 10)
                     .selectAll("path")
-                    .data(data)
+                    .data(static_data)
                     .join("path")
-                    .attr("transform", d => `translate(${xScale(d.x)},${yScale(d.y)})`)
-                    .attr("d", (d) => d3.symbol().type(d3.symbolCircle)());
+                        .attr("transform", d => `translate(${xScale(d.long)},${yScale(d.lat)})`)
+                        .attr("d", (d) => d3.symbol().type(d3.symbolCircle)());
     
                 return svg.node();
             }
