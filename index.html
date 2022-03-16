@@ -18,7 +18,7 @@
     {
         // autoType still resulting in strings? Due to malformed rows maybe?
         static_data = await loadCSV("MC2/data/StaticSensorReadings.csv", d3.autoType);
-        console.log(static_data);
+        mobile_data = await loadCSV("MC2/data/MobileSensorReadings.csv", d3.autoType);
     }
 
     main();
