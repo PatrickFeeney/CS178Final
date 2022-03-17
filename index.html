@@ -34,16 +34,18 @@
                     long: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).long,
                 }; }
             );
-            // mobile_data = await loadCSV("MC2/data/MobileSensorReadings.csv",
-            //     (d) => { return {
-            //         time: new Date(d.Timestamp),
-            //         id: parseInt(d["Sensor-id"]),
-            //         user: d[" User-id"].trim(),
-            //         lat: parseFloat(d.Lat),
-            //         long: parseFloat(d.Long),
-            //         val: parseFloat(d.Value),
-            //     }; }
-            // );
+            mobile_data = await loadCSV("MC2/data/MobileSensorReadings.csv",
+                (d) => { return {
+                    time: new Date(d.Timestamp),
+                    id: parseInt(d["Sensor-id"]),
+                    user: d[" User-id"].trim(),
+                    lat: parseFloat(d.Lat),
+                    long: parseFloat(d.Long),
+                    val: parseFloat(d.Value),
+                }; }
+            );
+            // TODO date filtering
+            static_data = static_data.slice(0, 100);
             // set spacing
             img_width = 995;
             img_height = 823;
@@ -57,7 +59,7 @@
             yScale = d3.scaleLinear()
                 .domain([0.0, 0.238585])
                 .range([img_height + margin.top, margin.top])
-            // TODO colorScale
+            colorScale = d3.scaleSequential(d3.extent(static_data, d => d.val), d3.interpolateReds);
             // create axes
             yAxis = g => g
                 .attr("transform", `translate(${margin.left},0)`)
@@ -69,17 +71,13 @@
             chart = () => {
                 const svg = d3.create("svg")
                     .attr("viewBox", [0, 0, width, height]);
-
                 svg.append("svg:image")
                     .attr("xlink:href", "MC2/data/StHimarkLabeledMap.png")
                     .attr("transform", `translate(${margin.left},${margin.top})`);
-
                 svg.append("g")
                     .call(xAxis);
-    
                 svg.append("g")
                     .call(yAxis);
-    
                 svg.append("g")
                     .attr("stroke-width", 1.5)
                     .attr("font-family", "sans-serif")
@@ -88,8 +86,8 @@
                     .data(static_data)
                     .join("path")
                         .attr("transform", d => `translate(${xScale(d.long)},${yScale(d.lat)})`)
-                        .attr("d", (d) => d3.symbol().type(d3.symbolCircle)());
-    
+                        .attr("d", (d) => d3.symbol().type(d3.symbolCircle)())
+                        .attr("fill", d => colorScale(d.val));
                 return svg.node();
             }
             d3.select("body").append("div").html(chart().outerHTML);
