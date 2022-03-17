@@ -71,13 +71,16 @@
             chart = () => {
                 const svg = d3.create("svg")
                     .attr("viewBox", [0, 0, width, height]);
+                // background image
                 svg.append("svg:image")
                     .attr("xlink:href", "MC2/data/StHimarkLabeledMap.png")
                     .attr("transform", `translate(${margin.left},${margin.top})`);
+                // axes and color bar
                 svg.append("g")
                     .call(xAxis);
                 svg.append("g")
                     .call(yAxis);
+                // points
                 svg.append("g")
                     .attr("stroke-width", 1.5)
                     .attr("font-family", "sans-serif")
@@ -92,7 +95,7 @@
             }
             d3.select("body").append("div").html(chart().outerHTML);
         }
-    
+
         main();
     </script>
 </body>
