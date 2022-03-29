@@ -58,6 +58,81 @@
             return svg.node();
         }
 
+        function sensorHistogram(sensorData)
+        {
+            // modified from this tutorial:
+            // https://observablehq.com/@d3/histogram
+            // set spacing
+            plot_width = 995;
+            plot_height = 200;
+            margin = ({top: 40, right: 40, bottom: 40, left: 40});
+            width = margin.left + plot_width + margin.right;
+            height = margin.top + plot_height + margin.bottom;
+            // set parameters
+            thresholds = 40;
+            insetLeft = .5;
+            insetRight = .5;
+            // compute values
+            const X = d3.map(sensorData, d => d.val);
+            const Y0 = d3.map(sensorData, () => 1);
+            const I = d3.range(X.length);
+            // compute bins
+            const bins = d3.bin().thresholds(thresholds).value(i => X[i])(I);
+            const Y = Array.from(bins, I => d3.sum(I, i => Y0[i]));
+            // create domains
+            xDomain = [bins[0].x0, bins[bins.length - 1].x1];
+            yDomain = [0, d3.max(Y)];
+            // create scales and axes
+            const xScale = d3.scaleLinear(xDomain, [margin.left, margin.left + plot_width]);
+            const yScale = d3.scaleLinear(yDomain, [margin.top + plot_height, margin.top]);
+            const xAxis = d3.axisBottom(xScale).ticks(width / 80).tickSizeOuter(0);
+            const yAxis = d3.axisLeft(yScale).ticks(height / 40);
+            // create view
+            const svg = d3.create("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", [0, 0, width, height])
+                .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
+            // create y axis
+            svg.append("g")
+                .attr("transform", `translate(${margin.left},0)`)
+                .call(yAxis)
+                .call(g => g.select(".domain").remove())
+                .call(g => g.selectAll(".tick line").clone()
+                    .attr("x2", plot_width)
+                    .attr("stroke-opacity", 0.1))
+                .call(g => g.append("text")
+                    .attr("x", -margin.left)
+                    .attr("y", 10)
+                    .attr("fill", "currentColor")
+                    .attr("text-anchor", "start")
+                    .text("Frequency"));
+            // create x axis
+            svg.append("g")
+                .attr("transform", `translate(0,${margin.top + plot_height})`)
+                .call(xAxis)
+                .call(g => g.append("text")
+                    .attr("x", margin.left + plot_width)
+                    .attr("y", 27)
+                    .attr("fill", "currentColor")
+                    .attr("text-anchor", "end")
+                    .text("Radiation"));
+            // create bars
+            svg.append("g")
+                .attr("fill", "blue")
+                .selectAll("rect")
+                .data(bins)
+                .join("rect")
+                .attr("x", d => xScale(d.x0) + insetLeft)
+                .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - insetLeft - insetRight))
+                .attr("y", (d, i) => yScale(Y[i]))
+                .attr("height", (d, i) => yScale(0) - yScale(Y[i]))
+                .append("title")
+                .text((d, i) => [`${d.x0} ≤ x < ${d.x1}`, Y[i]].join("\n"));
+
+            return svg.node();
+        }
+
         async function loadCSV(path, row_conv)
         {
             const response = await fetch(path);
@@ -96,6 +171,7 @@
             // TODO date filtering
             static_data = static_data.slice(0, 100);
             d3.select("body").append("div").html(geographicalPlot(static_data).outerHTML);
+            d3.select("body").append("div").html(sensorHistogram(static_data).outerHTML);
         }
 
         main();
