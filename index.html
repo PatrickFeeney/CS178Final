@@ -9,6 +9,55 @@
     
     <script>
         // Authored by Julia Santos Nothaft and Patrick Feeney
+        function geographicalPlot(data)
+        {
+            // set spacing
+            img_width = 995;
+            img_height = 823;
+            margin = ({top: 40, right: 40, bottom: 40, left: 40});
+            width = margin.left + img_width + margin.right;
+            height = margin.top + img_height + margin.bottom;
+            // create scales
+            xScale = d3.scaleLinear()
+                .domain([-120.0, -119.711751])
+                .range([margin.left, margin.left + img_width])
+            yScale = d3.scaleLinear()
+                .domain([0.0, 0.238585])
+                .range([img_height + margin.top, margin.top])
+            colorScale = d3.scaleSequential(d3.extent(data, d => d.val), d3.interpolateReds);
+            // create axes
+            yAxis = g => g
+                .attr("transform", `translate(${margin.left},0)`)
+                .call(d3.axisLeft(yScale));
+            xAxis = g => g
+                .attr("transform", `translate(0,${img_height + margin.top})`)
+                .call(d3.axisBottom(xScale));
+            // create the chart
+            const svg = d3.create("svg")
+                .attr("viewBox", [0, 0, width, height]);
+            // background image
+            svg.append("svg:image")
+                .attr("xlink:href", "MC2/data/StHimarkLabeledMap.png")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+            // axes and color bar
+            svg.append("g")
+                .call(xAxis);
+            svg.append("g")
+                .call(yAxis);
+            // points
+            svg.append("g")
+                .attr("stroke-width", 1.5)
+                .attr("font-family", "sans-serif")
+                .attr("font-size", 10)
+                .selectAll("path")
+                .data(data)
+                .join("path")
+                    .attr("transform", d => `translate(${xScale(d.long)},${yScale(d.lat)})`)
+                    .attr("d", (d) => d3.symbol().type(d3.symbolCircle)())
+                    .attr("fill", d => colorScale(d.val));
+            return svg.node();
+        }
+
         async function loadCSV(path, row_conv)
         {
             const response = await fetch(path);
@@ -46,54 +95,7 @@
             );
             // TODO date filtering
             static_data = static_data.slice(0, 100);
-            // set spacing
-            img_width = 995;
-            img_height = 823;
-            margin = ({top: 40, right: 40, bottom: 40, left: 40});
-            width = margin.left + img_width + margin.right;
-            height = margin.top + img_height + margin.bottom;
-            // create scales
-            xScale = d3.scaleLinear()
-                .domain([-120.0, -119.711751])
-                .range([margin.left, margin.left + img_width])
-            yScale = d3.scaleLinear()
-                .domain([0.0, 0.238585])
-                .range([img_height + margin.top, margin.top])
-            colorScale = d3.scaleSequential(d3.extent(static_data, d => d.val), d3.interpolateReds);
-            // create axes
-            yAxis = g => g
-                .attr("transform", `translate(${margin.left},0)`)
-                .call(d3.axisLeft(yScale));
-            xAxis = g => g
-                .attr("transform", `translate(0,${img_height + margin.top})`)
-                .call(d3.axisBottom(xScale));
-            // create the chart
-            chart = () => {
-                const svg = d3.create("svg")
-                    .attr("viewBox", [0, 0, width, height]);
-                // background image
-                svg.append("svg:image")
-                    .attr("xlink:href", "MC2/data/StHimarkLabeledMap.png")
-                    .attr("transform", `translate(${margin.left},${margin.top})`);
-                // axes and color bar
-                svg.append("g")
-                    .call(xAxis);
-                svg.append("g")
-                    .call(yAxis);
-                // points
-                svg.append("g")
-                    .attr("stroke-width", 1.5)
-                    .attr("font-family", "sans-serif")
-                    .attr("font-size", 10)
-                    .selectAll("path")
-                    .data(static_data)
-                    .join("path")
-                        .attr("transform", d => `translate(${xScale(d.long)},${yScale(d.lat)})`)
-                        .attr("d", (d) => d3.symbol().type(d3.symbolCircle)())
-                        .attr("fill", d => colorScale(d.val));
-                return svg.node();
-            }
-            d3.select("body").append("div").html(chart().outerHTML);
+            d3.select("body").append("div").html(geographicalPlot(static_data).outerHTML);
         }
 
         main();
