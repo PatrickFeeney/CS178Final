@@ -54,7 +54,9 @@
                 .join("path")
                     .attr("transform", d => `translate(${xScale(d.long)},${yScale(d.lat)})`)
                     .attr("d", (d) => d3.symbol().type(d3.symbolCircle)())
-                    .attr("fill", d => colorScale(d.val));
+                    .attr("fill", d => colorScale(d.val))
+                    .append("title")
+                        .text(d => `${d.val}`);
             return svg.node();
         }
 
