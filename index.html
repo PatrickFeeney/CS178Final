@@ -135,6 +135,25 @@
             return svg.node();
         }
 
+        function filterDate(sensorData, startDate, endDate)
+        {
+            return sensorData.filter((d) => d.time >= startDate && d.time < endDate);
+        }
+
+        function maxForLocation(sensorData)
+        {
+            maxMap = new Map();
+            for (d of sensorData)
+            {
+                key = [d.lat, d.long];
+                if (!maxMap.has(key) || maxMap.get(key).val < d.val)
+                {
+                    maxMap.set(key, d);
+                }
+            }
+            return Array.from(maxMap.values());
+        }
+
         async function loadCSV(path, row_conv)
         {
             const response = await fetch(path);
@@ -171,9 +190,12 @@
                 }; }
             );
             // TODO date filtering
-            static_data = static_data.slice(0, 100);
-            d3.select("body").append("div").html(geographicalPlot(static_data).outerHTML);
-            d3.select("body").append("div").html(sensorHistogram(static_data).outerHTML);
+            static_filtered = static_data
+            static_filtered = filterDate(static_filtered, new Date("04/06/2020"), new Date("04/07/2020"));
+            // TODO fix
+            static_filtered = maxForLocation(static_filtered);
+            d3.select("body").append("div").html(geographicalPlot(static_filtered).outerHTML);
+            d3.select("body").append("div").html(sensorHistogram(static_filtered).outerHTML);
         }
 
         main();
