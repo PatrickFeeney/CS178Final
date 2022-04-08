@@ -5,8 +5,10 @@ The MC2 folder contains the files shared for the VAST 2019 MC2 except MobileSens
 ### Install
 
 1. Install [node.js](https://nodejs.org/en/).
-1. Run ```npm install```.
+1. Install [MongoDB](https://www.mongodb.com/try/download/community). Recommended to uncheck the "Install MongoD as a Service" box and to install MongoDB Compass.
+1. Unzip db.zip, producing the db folder in the root of the repository. 
+1. Run ```npm install``` from root of repository.
 
 ### Running
 
-TODO
+1. Launch the database server by running ```./launch_mongo.ps1```.
