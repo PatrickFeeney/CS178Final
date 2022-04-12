@@ -135,51 +135,49 @@
             return svg.node();
         }
 
-        function filterDate(sensorData, startDate, endDate)
-        {
-            return sensorData.filter((d) => d.time >= startDate && d.time < endDate);
-        }
-
-        function maxForLocation(sensorData)
-        {
-            maxMap = new Map();
-            for (d of sensorData)
-            {
-                key = [d.lat, d.long];
-                if (!maxMap.has(key) || maxMap.get(key).val < d.val)
-                {
-                    maxMap.set(key, d);
-                }
-            }
-            return Array.from(maxMap.values());
-        }
-
         async function loadCSV(path, row_conv)
         {
             const response = await fetch(path);
             return d3.csvParse(await response.text(), row_conv);
         }
+
+        async function loadData(start_date=null, end_date=null, min_val=null, max_val=null)
+        {
+            // TODO implement parameters
+            const response = await fetch("data?start_date=2020-04-06T04:00:10&end_date=2020-04-06T05:00:10");
+            return response.json();
+        }
         
         async function main()
         {
             // load CSVs
-            static_locs = await loadCSV("MC2/data/StaticSensorLocations.csv",
-                (d) => { return {
-                    id: parseInt(d["Sensor-id"]),
-                    lat: parseFloat(d.Lat),
-                    long: parseFloat(d.Long),
-                }; }
-            );
-            static_data = await loadCSV("MC2/data/StaticSensorReadings.csv",
-                (d) => { return {
-                    time: new Date(d.Timestamp),
-                    id: parseInt(d["Sensor-id"]),
-                    val: parseFloat(d.Value),
-                    lat: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).lat,
-                    long: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).long,
-                }; }
-            );
-            mobile_data = await loadCSV("MC2/data/MobileSensorReadings.csv",
+            // static_locs = await loadCSV("MC2/data/StaticSensorLocations.csv",
+            //     (d) => { return {
+            //         id: parseInt(d["Sensor-id"]),
+            //         lat: parseFloat(d.Lat),
+            //         long: parseFloat(d.Long),
+            //     }; }
+            // );
+            // static_data = await loadCSV("MC2/data/StaticSensorReadings.csv",
+            //     (d) => { return {
+            //         time: new Date(d.Timestamp),
+            //         id: parseInt(d["Sensor-id"]),
+            //         val: parseFloat(d.Value),
+            //         lat: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).lat,
+            //         long: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).long,
+            //     }; }
+            // );
+            // mobile_data = await loadCSV("MC2/data/MobileSensorReadings.csv",
+            //     (d) => { return {
+            //         time: new Date(d.Timestamp),
+            //         id: parseInt(d["Sensor-id"]),
+            //         user: d[" User-id"].trim(),
+            //         lat: parseFloat(d.Lat),
+            //         long: parseFloat(d.Long),
+            //         val: parseFloat(d.Value),
+            //     }; }
+            // );
+            mobile_data = Array.from(await loadData(),
                 (d) => { return {
                     time: new Date(d.Timestamp),
                     id: parseInt(d["Sensor-id"]),
@@ -189,13 +187,8 @@
                     val: parseFloat(d.Value),
                 }; }
             );
-            // TODO date filtering
-            static_filtered = static_data
-            static_filtered = filterDate(static_filtered, new Date("04/06/2020"), new Date("04/07/2020"));
-            // TODO fix
-            static_filtered = maxForLocation(static_filtered);
-            d3.select("body").append("div").html(geographicalPlot(static_filtered).outerHTML);
-            d3.select("body").append("div").html(sensorHistogram(static_filtered).outerHTML);
+            d3.select("body").append("div").html(geographicalPlot(mobile_data).outerHTML);
+            d3.select("body").append("div").html(sensorHistogram(mobile_data).outerHTML);
         }
 
         main();

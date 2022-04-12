@@ -12,3 +12,5 @@ The MC2 folder contains the files shared for the VAST 2019 MC2 except MobileSens
 ### Running
 
 1. Launch the database server by running ```./launch_mongo.ps1```.
+1. Launch the node.js server by running ```node server.js```.
+1. Visit the website by going to ```http://localhost:8080/index.html```.
