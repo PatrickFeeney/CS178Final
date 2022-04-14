@@ -177,16 +177,7 @@
             //         val: parseFloat(d.Value),
             //     }; }
             // );
-            mobile_data = Array.from(await loadData(),
-                (d) => { return {
-                    time: new Date(d.Timestamp),
-                    id: parseInt(d["Sensor-id"]),
-                    user: d[" User-id"].trim(),
-                    lat: parseFloat(d.Lat),
-                    long: parseFloat(d.Long),
-                    val: parseFloat(d.Value),
-                }; }
-            );
+            mobile_data = await loadData();
             d3.select("body").append("div").html(geographicalPlot(mobile_data).outerHTML);
             d3.select("body").append("div").html(sensorHistogram(mobile_data).outerHTML);
         }

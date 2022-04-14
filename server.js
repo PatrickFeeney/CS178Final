@@ -26,10 +26,21 @@ http.createServer(function (req, res) {
       if (err) throw err;
       var dbo = db.db("MC2");
       var query = {Timestamp: {$gte: url_query.start_date, $lt: url_query.end_date}};
-      data = await dbo.collection("MobileSensorReadings").find(query).toArray();
+      // query mobile data and process
+      raw_mobile_data = await dbo.collection("MobileSensorReadings").find(query).toArray();
+      mobile_data = Array.from(raw_mobile_data,
+        (d) => { return {
+          time: new Date(d.Timestamp),
+          id: parseInt(d["Sensor-id"]),
+          user: d[" User-id"].trim(),
+          lat: parseFloat(d.Lat),
+          long: parseFloat(d.Long),
+          val: parseFloat(d.Value),
+        }; }
+      );
       // send response
       res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify(data));
+      res.end(JSON.stringify(mobile_data));
     });
   }
   else
