@@ -86,9 +86,9 @@
             yDomain = [0, d3.max(Y)];
             // create scales and axes
             const xScale = d3.scaleLinear(xDomain, [margin.left, margin.left + plot_width]);
-            const yScale = d3.scaleLinear(yDomain, [margin.top + plot_height, margin.top]);
+            const yScale = d3.scaleSymlog(yDomain, [margin.top + plot_height, margin.top]);
             const xAxis = d3.axisBottom(xScale).ticks(width / 80).tickSizeOuter(0);
-            const yAxis = d3.axisLeft(yScale).ticks(height / 40);
+            const yAxis = d3.axisLeft(yScale).tickValues([1, 10, 100, 1000, 10000]);
             // create view
             const svg = d3.create("svg")
                 .attr("width", width)
