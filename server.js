@@ -12,7 +12,6 @@ http.createServer(function (req, res) {
   {
     // parse query
     var url_query = url.parse(req.url, true).query;
-    // TODO test with actual URL
     if (url_query.start_date == null)
       url_query.start_date = new Date("2020-04-06T04:00:10");
     else
@@ -26,13 +25,32 @@ http.createServer(function (req, res) {
       if (err) throw err;
       var dbo = db.db("MC2");
       var query = {Timestamp: {$gte: url_query.start_date, $lt: url_query.end_date}};
-      // query mobile data and process
-      raw_mobile_data = await dbo.collection("MobileSensorReadings").find(query).toArray();
-      mobile_data = Array.from(raw_mobile_data,
+      // request queries to get them running, need to await variables to get results
+      raw_static_locs = dbo.collection("StaticSensorLocations").find().toArray();
+      raw_static_data = dbo.collection("StaticSensorReadings").find(query).toArray();
+      raw_mobile_data = dbo.collection("MobileSensorReadings").find(query).toArray();
+      // process static data
+      static_locs = Array.from(await raw_static_locs,
+        (d) => { return {
+          id: parseInt(d["Sensor-id"]),
+          lat: parseFloat(d.Lat),
+          long: parseFloat(d.Long),
+        }; }
+      );
+      static_data = Array.from(await raw_static_data,
+      (d) => { return {
+        time: new Date(d.Timestamp),
+        id: "Static:" + d["Sensor-id"].trim(),
+        val: parseFloat(d.Value),
+        lat: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).lat,
+        long: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).long,
+        }; }
+      );
+      // process mobile data
+      mobile_data = Array.from(await raw_mobile_data,
         (d) => { return {
           time: new Date(d.Timestamp),
-          id: parseInt(d["Sensor-id"]),
-          user: d[" User-id"].trim(),
+          id: d[" User-id"].trim() + ":" + d["Sensor-id"].trim(),
           lat: parseFloat(d.Lat),
           long: parseFloat(d.Long),
           val: parseFloat(d.Value),
@@ -40,7 +58,7 @@ http.createServer(function (req, res) {
       );
       // send response
       res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify(mobile_data));
+      res.end(JSON.stringify(mobile_data.concat(static_data)));
     });
   }
   else

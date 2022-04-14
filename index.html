@@ -177,9 +177,9 @@
             //         val: parseFloat(d.Value),
             //     }; }
             // );
-            mobile_data = await loadData();
-            d3.select("body").append("div").html(geographicalPlot(mobile_data).outerHTML);
-            d3.select("body").append("div").html(sensorHistogram(mobile_data).outerHTML);
+            data = await loadData();
+            d3.select("body").append("div").html(geographicalPlot(data).outerHTML);
+            d3.select("body").append("div").html(sensorHistogram(data).outerHTML);
         }
 
         main();
