@@ -12,23 +12,42 @@ http.createServer(function (req, res) {
   {
     // parse query
     var url_query = url.parse(req.url, true).query;
-    if (url_query.start_date == null)
-      url_query.start_date = new Date("2020-04-06T04:00:10");
-    else
-      url_query.start_date = new Date(url_query.start_date);
-    if (url_query.end_date == null)
-      url_query.end_date = new Date("2020-04-06T04:00:30");
-    else
-      url_query.end_date = new Date(url_query.end_date);
+    url_query.start_date = url_query.start_date == null ?
+      new Date(url_query.start_date)
+      : new Date("2020-04-06T04:00:10");
+    url_query.end_date = url_query.end_date == null?
+      new Date(url_query.end_date)
+      : new Date("2020-04-06T04:00:30");
+    url_query.min_val = url_query.min_val == null ?
+      parseFloat(url_query.min_val)
+      : 0.0;
+    url_query.max_val = url_query.max_val == null ?
+      parseFloat(url_query.max_val)
+      : 10000.0;
+    if (url_query.tag != null)
+    {
+      url_query.user_id = url_query.tag.split(":")[0];
+      url_query.sensor_id = url_query.tag.split(":")[0];
+    }
     // query database
     MongoClient.connect(mongo_url, async function(err, db) {
       if (err) throw err;
       var dbo = db.db("MC2");
-      var query = {Timestamp: {$gte: url_query.start_date, $lt: url_query.end_date}};
+      var base_query = {
+        Timestamp: {$gte: url_query.start_date, $lte: url_query.end_date},
+        Value: {$gte: url_query.min_val, $lte: url_query.max_val}
+      };
+      // parse id filtering
+      var static_query = base_query;
+      var mobile_query = base_query;
+      if (url_query.user_id == "Static")
+        static_query["Sensor-id"] = url_query.sensor_id;
+      else if (url_query.user_id != null)
+        mobile_query["Sensor-id"] = url_query.sensor_id;
       // request queries to get them running, need to await variables to get results
       raw_static_locs = dbo.collection("StaticSensorLocations").find().toArray();
-      raw_static_data = dbo.collection("StaticSensorReadings").find(query).toArray();
-      raw_mobile_data = dbo.collection("MobileSensorReadings").find(query).toArray();
+      raw_static_data = dbo.collection("StaticSensorReadings").find(static_query).toArray();
+      raw_mobile_data = dbo.collection("MobileSensorReadings").find(mobile_query).toArray();
       // process static data
       static_locs = Array.from(await raw_static_locs,
         (d) => { return {
@@ -40,7 +59,7 @@ http.createServer(function (req, res) {
       static_data = Array.from(await raw_static_data,
       (d) => { return {
         time: new Date(d.Timestamp),
-        id: "Static:" + d["Sensor-id"].trim(),
+        id: "Static:" + d["Sensor-id"],
         val: parseFloat(d.Value),
         lat: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).lat,
         long: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).long,
@@ -50,7 +69,7 @@ http.createServer(function (req, res) {
       mobile_data = Array.from(await raw_mobile_data,
         (d) => { return {
           time: new Date(d.Timestamp),
-          id: d[" User-id"].trim() + ":" + d["Sensor-id"].trim(),
+          id: d[" User-id"].trim() + ":" + d["Sensor-id"],
           lat: parseFloat(d.Lat),
           long: parseFloat(d.Long),
           val: parseFloat(d.Value),

@@ -143,10 +143,16 @@
             return d3.csvParse(await response.text(), row_conv);
         }
 
-        async function loadData(start_date=null, end_date=null, min_val=null, max_val=null)
+        async function loadData(start_date="2020-04-06T04:00:10", end_date="2020-04-06T04:00:30",
+                                min_val=0, max_val=10000, id=null)
         {
-            // TODO implement parameters
-            const response = await fetch("data?start_date=2020-04-06T04:00:10&end_date=2020-04-06T05:00:10");
+            data_str = "data?start_date=" + start_date + "&"
+                + "end_date=" + end_date + "&"
+                + "min_val=" + min_val.toString() + "&"
+                + "max_val=" + max_val.toString();
+            if (id != null)
+                data_str += "&tag=" + id;
+            const response = await fetch(data_str);
             return response.json();
         }
         
