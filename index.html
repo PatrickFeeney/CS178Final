@@ -36,7 +36,8 @@
             const svg = d3.create("svg")
                 .attr("width", width)
                 .attr("height", height)
-                .attr("viewBox", [0, 0, width, height]);
+                .attr("viewBox", [0, 0, width, height])
+                .attr("id", "geoSVG");
             // background image
             svg.append("svg:image")
                 .attr("xlink:href", "MC2/data/StHimarkLabeledMap.png")
@@ -46,29 +47,29 @@
                 .call(xAxis);
             svg.append("g")
                 .call(yAxis);
+            // create points
+            geographicalPlotPoints(data, svg);
+            return svg.node();
+        }
+
+        function geographicalPlotPoints(data, svg, min_val=0, max_val=10000)
+        {
+            // filter data before creating points
+            filtered = data.filter((d) => {return d.val >= min_val && d.val <= max_val;});
             // points
             svg.append("g")
                 .attr("stroke-width", 1.5)
                 .attr("font-family", "sans-serif")
                 .attr("font-size", 10)
+                .attr("id", "geoPoints")
                 .selectAll("path")
-                .data(data)
+                .data(filtered)
                 .join("path")
                     .attr("transform", d => `translate(${xScale(d.long)},${yScale(d.lat)})`)
                     .attr("d", (d) => d3.symbol().type(d3.symbolCircle)())
                     .attr("fill", d => colorScale(d.val))
                     .append("title")
                         .text(d => `${d.val}`);
-            return svg.node();
-        }
-        
-        function brushend() {
-            var brush = d3.select(".brush").node();
-            if (brush != null)
-            {
-                var selection = d3.brushSelection(brush);
-            }
-            console.log("brushend");
         }
 
         function sensorHistogram(sensorData)
@@ -100,6 +101,8 @@
             const yScale = d3.scaleSymlog(yDomain, [margin.top + plot_height, margin.top]);
             const xAxis = d3.axisBottom(xScale).ticks(width / 80).tickSizeOuter(0);
             const yAxis = d3.axisLeft(yScale).tickValues([1, 10, 100, 1000, 10000]);
+            // create public xScale for brush function
+            sensorHistXScale = xScale
             // create view
             const svg = d3.create("svg")
                 .attr("width", width)
@@ -110,7 +113,7 @@
             const defaultSelection = xScale.range();
             const brush = d3.brushX()
                 .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]])
-                .on("end", brushend);
+                .on("end", updateFromGeoBrush);
             // Append brush component
             const gbrush = svg.append("g")
                 .attr("class", "brush")
@@ -173,6 +176,18 @@
                 data_str += "&tag=" + id;
             const response = await fetch(data_str);
             return response.json();
+        }
+
+        async function updateFromGeoBrush()
+        {
+            var brush = d3.select(".brush").node();
+            if (brush != null)
+            {
+                var selection = d3.brushSelection(brush);
+                var val_range = selection.map(sensorHistXScale.invert, sensorHistXScale);
+                d3.select("#geoPoints").remove();
+                geographicalPlotPoints(data, d3.select("#geoSVG"), val_range[0], val_range[1]);
+            }
         }
         
         async function main()
