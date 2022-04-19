@@ -61,16 +61,7 @@
                         .text(d => `${d.val}`);
             return svg.node();
         }
-
         
-        function brushed() {
-            var brush = d3.select(".brush").node();
-            if (brush != null)
-            {
-                var selection = d3.brushSelection(brush);
-            }
-            console.log("brushed");
-        }
         function brushend() {
             var brush = d3.select(".brush").node();
             if (brush != null)
@@ -116,10 +107,9 @@
                 .attr("viewBox", [0, 0, width, height])
                 .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
             // Initialize brush component
-            const defaultSelection = [xScale.range()[0] + 50, xScale.range()[1] - 10];
+            const defaultSelection = xScale.range();
             const brush = d3.brushX()
-                .extent([[0, margin.top], [width, height - margin.bottom]])
-                .on("brush", brushed)
+                .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]])
                 .on("end", brushend);
             // Append brush component
             const gbrush = svg.append("g")
@@ -215,8 +205,8 @@
             //     }; }
             // );
             data = await loadData();
-            d3.select("body").append("div").html(geographicalPlot(data).outerHTML);
-            d3.select("body").append("div").html(sensorHistogram(data).outerHTML);
+            d3.select("body").append("div").append(() => geographicalPlot(data));
+            d3.select("body").append("div").append(() => sensorHistogram(data));
         }
 
         main();
