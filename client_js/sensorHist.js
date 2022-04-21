@@ -6,7 +6,7 @@ async function updateGeoFromBrush()
         var selection = d3.brushSelection(brush);
         var val_range = selection.map(sensorHistXScale.invert, sensorHistXScale);
         d3.select("#geoPoints").remove();
-        geographicalPlotPoints(data, d3.select("#geoSVG"), val_range[0], val_range[1]);
+        geographicalPlotPoints(data["agg_data"], d3.select("#geoSVG"), val_range[0], val_range[1]);
     }
 }
 

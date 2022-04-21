@@ -109,8 +109,10 @@ http.createServer(function (req, res) {
       mobile_aggregate[0]['$match'] = mobile_query;
       // request queries to get them running, need to await variables to get results
       raw_static_locs = dbo.collection("StaticSensorLocations").find().toArray();
-      raw_static_data = dbo.collection("StaticSensorReadings").aggregate(static_aggregate).toArray();
-      raw_mobile_data = dbo.collection("MobileSensorReadings").aggregate(mobile_aggregate).toArray();
+      raw_static_agg = dbo.collection("StaticSensorReadings").aggregate(static_aggregate).toArray();
+      raw_static_vals = dbo.collection("StaticSensorReadings").find(static_query, {"Value": 1}).toArray();
+      raw_mobile_agg = dbo.collection("MobileSensorReadings").aggregate(mobile_aggregate).toArray();
+      raw_mobile_vals = dbo.collection("MobileSensorReadings").find(mobile_query, {"Value": 1}).toArray();
       // process static data
       static_locs = Array.from(await raw_static_locs,
         (d) => { return {
@@ -119,28 +121,41 @@ http.createServer(function (req, res) {
           long: parseFloat(d.Long),
         }; }
       );
-      static_data = Array.from(await raw_static_data,
+      static_agg = Array.from(await raw_static_agg,
       (d) => { return {
-        time: new Date(d.Timestamp),
         id: "Static:" + d["Sensor-id"],
         val: parseFloat(d.Value),
         lat: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).lat,
         long: static_locs.find(loc => loc.id == parseInt(d["Sensor-id"])).long,
         }; }
       );
+      static_vals = Array.from(await raw_static_vals,
+      (d) => { return {
+        id: "Static:" + d["Sensor-id"],
+        val: parseFloat(d.Value),
+        }; }
+      );
       // process mobile data
-      mobile_data = Array.from(await raw_mobile_data,
+      mobile_agg = Array.from(await raw_mobile_agg,
         (d) => { return {
-          time: new Date(d.Timestamp),
           id: d[" User-id"].trim() + ":" + d["Sensor-id"],
+          val: parseFloat(d.Value),
           lat: parseFloat(d.Lat),
           long: parseFloat(d.Long),
+        }; }
+      );
+      mobile_vals = Array.from(await raw_mobile_vals,
+        (d) => { return {
+          id: d[" User-id"].trim() + ":" + d["Sensor-id"],
           val: parseFloat(d.Value),
         }; }
       );
       // send response
       res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify(mobile_data.concat(static_data)));
+      res.end(JSON.stringify({
+        "agg_data": mobile_agg.concat(static_agg),
+        "val_data": mobile_vals.concat(static_vals),
+      }));
     });
   }
   else
