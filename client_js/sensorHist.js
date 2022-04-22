@@ -1,10 +1,19 @@
 async function updateGeoFromBrush()
 {
-    var brush = d3.select(".brush").node();
-    if (brush != null)
+    var brush_node = d3.select(".brush").node();
+    if (brush_node != null)
     {
-        var selection = d3.brushSelection(brush);
-        var val_range = selection.map(sensorHistXScale.invert, sensorHistXScale);
+        var selection = d3.brushSelection(brush_node);
+        var val_range = null;
+        if (selection != null)
+        {
+            val_range = selection.map(sensorHistXScale.invert, sensorHistXScale);
+        }
+        else
+        {
+            d3.select(".brush").call(brush).call(brush.move, sensorHistXScale.range())
+            val_range = [0, 10000];
+        }
         d3.select("#geoPoints").remove();
         geographicalPlotPoints(data["agg_data"], d3.select("#geoSVG"), val_range[0], val_range[1]);
     }
@@ -49,11 +58,11 @@ function sensorHistogram(sensorData)
         .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
     // Initialize brush component
     const defaultSelection = xScale.range();
-    const brush = d3.brushX()
+    brush = d3.brushX()
         .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]])
         .on("end", updateGeoFromBrush);
     // Append brush component
-    const gbrush = svg.append("g")
+    gbrush = svg.append("g")
         .attr("class", "brush")
         .call(brush)
         .call(brush.move, defaultSelection);
