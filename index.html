@@ -54,7 +54,7 @@
             }
             else
             {
-                d3.select("#geoPoints").selectAll("path").attr("fill-opacity", 0);
+                d3.select("#geoPoints").selectAll("path").attr("fill-opacity", 0.1);
                 d3.selectAll("." + selectedTag.replaceAll(":", "\\:")).attr("fill-opacity", 1);
             }
         }
