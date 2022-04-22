@@ -57,6 +57,8 @@
                 d3.select("#geoPoints").selectAll("path").attr("fill-opacity", 0.1);
                 d3.selectAll("." + selectedTag.replaceAll(":", "\\:")).attr("fill-opacity", 1);
             }
+            d3.select("#histDiv").selectAll("*").remove();
+            d3.select("#histDiv").append(() => sensorHistogram(data["val_data"], selectedTag));
         }
 
         async function main()
@@ -91,7 +93,7 @@
             data = await loadData();
             updateSensorSelect(data["val_data"]);
             d3.select("body").append("div").append(() => geographicalPlot(data["agg_data"]));
-            d3.select("body").append("div").append(() => sensorHistogram(data["val_data"]));
+            d3.select("body").append("div").attr("id", "histDiv").append(() => sensorHistogram(data["val_data"], "All"));
         }
 
         main();

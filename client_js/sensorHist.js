@@ -19,7 +19,7 @@ async function updateGeoFromBrush()
     }
 }
 
-function sensorHistogram(sensorData)
+function sensorHistogram(sensorData, selectedTag)
 {
     // modified from this tutorial:
     // https://observablehq.com/@d3/histogram
@@ -40,6 +40,9 @@ function sensorHistogram(sensorData)
     // compute bins
     const bins = d3.bin().thresholds(thresholds).value(i => X[i])(I);
     const Y = Array.from(bins, I => d3.sum(I, i => Y0[i]));
+    const Y_sel = Array.from(bins, I => d3.sum(I, i => (sensorData[i].id == selectedTag || selectedTag == "All") ? 1 : 0));
+    console.log(Y);
+    console.log(Y_sel);
     // create domains
     xDomain = [bins[0].x0, bins[bins.length - 1].x1];
     yDomain = [0, d3.max(Y)];
@@ -90,7 +93,7 @@ function sensorHistogram(sensorData)
             .attr("fill", "currentColor")
             .attr("text-anchor", "end")
             .text("Radiation"));
-    // create bars
+    // create selected bars
     svg.append("g")
         .attr("fill", "blue")
         .selectAll("rect")
@@ -98,10 +101,22 @@ function sensorHistogram(sensorData)
         .join("rect")
         .attr("x", d => xScale(d.x0) + insetLeft)
         .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - insetLeft - insetRight))
-        .attr("y", (d, i) => yScale(Y[i]))
-        .attr("height", (d, i) => yScale(0) - yScale(Y[i]))
+        .attr("y", (d, i) => yScale(Y_sel[i]))
+        .attr("height", (d, i) => yScale(0) - yScale(Y_sel[i]))
         .append("title")
-        .text((d, i) => [`${d.x0} ≤ x < ${d.x1}`, Y[i]].join("\n"));
+        .text((d, i) => [`${d.x0} ≤ x < ${d.x1}`, Y_sel[i]].join("\n"));
+    // create unselected bars
+    svg.append("g")
+        .attr("fill", "black")
+        .selectAll("rect")
+        .data(bins)
+        .join("rect")
+        .attr("x", d => xScale(d.x0) + insetLeft)
+        .attr("width", d => Math.max(0, xScale(d.x1) - xScale(d.x0) - insetLeft - insetRight))
+        .attr("y", (d, i) => yScale(Y[i]))
+        .attr("height", (d, i) => yScale(Y_sel[i]) - yScale(Y[i]))
+        .append("title")
+        .text((d, i) => [`${d.x0} ≤ x < ${d.x1}`, Y[i] - Y_sel[i]].join("\n"));
 
     return svg.node();
 }
