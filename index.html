@@ -28,6 +28,22 @@
             const response = await fetch(data_str);
             return response.json();
         }
+
+        function updateSensorSelect(data)
+        {
+            tagsSet = new Set();
+            for (i in data)
+            {
+                tagsSet.add(data[i].id);
+            }
+            tagsArray = Array.from(tagsSet).sort();
+            tagsArray.splice(0, 0, "All");
+            sensorSelect = d3.select("#sensorSelect");
+            for (i in tagsArray)
+            {
+                sensorSelect.append("option").text(tagsArray[i]);
+            }
+        }
         
         async function main()
         {
@@ -59,11 +75,13 @@
             //     }; }
             // );
             data = await loadData();
+            updateSensorSelect(data["val_data"]);
             d3.select("body").append("div").append(() => geographicalPlot(data["agg_data"]));
             d3.select("body").append("div").append(() => sensorHistogram(data["val_data"]));
         }
 
         main();
     </script>
+    <select id="sensorSelect"></select>
 </body>
 </html>
