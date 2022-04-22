@@ -59,6 +59,7 @@ function geographicalPlotPoints(data, svg, min_val=0, max_val=10000)
             .attr("transform", d => `translate(${xScale(d.long)},${yScale(d.lat)})`)
             .attr("d", (d) => d3.symbol().type(d3.symbolCircle)())
             .attr("fill", d => geoColorScale(d.val))
+            .attr("class", d => d.id)
             .append("title")
-                .text(d => `${d.val}`);
+                .text(d => `${d.val}\n${d.id}`);
 }

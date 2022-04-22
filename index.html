@@ -44,7 +44,21 @@
                 sensorSelect.append("option").text(tagsArray[i]);
             }
         }
-        
+
+        function onSensorSelect()
+        {
+            selectedTag = d3.select("#sensorSelect").node().value;
+            if (selectedTag == "All")
+            {
+                d3.select("#geoPoints").selectAll("path").attr("fill-opacity", 1);
+            }
+            else
+            {
+                d3.select("#geoPoints").selectAll("path").attr("fill-opacity", 0);
+                d3.selectAll("." + selectedTag.replaceAll(":", "\\:")).attr("fill-opacity", 1);
+            }
+        }
+
         async function main()
         {
             // load CSVs
@@ -82,6 +96,6 @@
 
         main();
     </script>
-    <select id="sensorSelect"></select>
+    <select id="sensorSelect" oninput="onSensorSelect()"></select>
 </body>
 </html>
