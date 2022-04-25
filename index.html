@@ -90,7 +90,24 @@
             //         val: parseFloat(d.Value),
             //     }; }
             // );
-            data = await loadData();
+            data_promise = loadData();
+            static_std_promise = loadCSV("data_processing/StaticSensorSTD.csv",
+                (d) => { return {
+                    id: d["Tag"],
+                    dTime: parseInt(d["DeltaTime"]),
+                    std: parseFloat(d["STD"]),
+                };}
+            )
+            mobile_std_promise = loadCSV("data_processing/MobileSensorSTD.csv",
+                (d) => { return {
+                    id: d["Tag"],
+                    dTime: parseInt(d["DeltaTime"]),
+                    std: parseFloat(d["STD"]),
+                };}
+            )
+            static_std = await static_std_promise;
+            mobile_std = await mobile_std_promise;
+            data = await data_promise;
             updateSensorSelect(data["val_data"]);
             d3.select("body").append("div").append(() => geographicalPlot(data["agg_data"]));
             d3.select("body").append("div").attr("id", "histDiv").append(() => sensorHistogram(data["val_data"], "All"));
