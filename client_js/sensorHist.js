@@ -41,8 +41,6 @@ function sensorHistogram(sensorData, selectedTag)
     const bins = d3.bin().thresholds(thresholds).value(i => X[i])(I);
     const Y = Array.from(bins, I => d3.sum(I, i => Y0[i]));
     const Y_sel = Array.from(bins, I => d3.sum(I, i => (sensorData[i].id == selectedTag || selectedTag == "All") ? 1 : 0));
-    console.log(Y);
-    console.log(Y_sel);
     // create domains
     xDomain = [bins[0].x0, bins[bins.length - 1].x1];
     yDomain = [0, d3.max(Y)];
