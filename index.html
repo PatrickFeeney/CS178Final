@@ -109,12 +109,14 @@
             mobile_std = await mobile_std_promise;
             data = await data_promise;
             updateSensorSelect(data["val_data"]);
-            d3.select("body").append("div").append(() => geographicalPlot(data["agg_data"]));
-            d3.select("body").append("div").attr("id", "histDiv").append(() => sensorHistogram(data["val_data"], "All"));
+            d3.select("#geoDiv").append(() => geographicalPlot(data["agg_data"]));
+            d3.select("#histDiv").append(() => sensorHistogram(data["val_data"], "All"));
         }
 
         main();
     </script>
     <select id="sensorSelect" oninput="onSensorSelect()"></select>
+    <div id="geoDiv"></div>
+    <div id="histDiv"></div>
 </body>
 </html>
