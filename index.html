@@ -107,6 +107,7 @@
             )
             static_std = await static_std_promise;
             mobile_std = await mobile_std_promise;
+            data_std = static_std.concat(mobile_std);
             data = await data_promise;
             updateSensorSelect(data["val_data"]);
             d3.select("#geoDiv").append(() => geographicalPlot(data["agg_data"]));
