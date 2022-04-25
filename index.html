@@ -16,7 +16,7 @@
             return d3.csvParse(await response.text(), row_conv);
         }
 
-        async function loadData(start_date="2020-04-06T04:00:10", end_date="2020-04-06T08:00:10",
+        async function loadData(start_date="2020-04-06T04:00:00", end_date="2020-04-06T08:00:00",
                                 min_val=0, max_val=10000, id=null)
         {
             data_str = "data?start_date=" + start_date + "&"
