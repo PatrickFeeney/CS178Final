@@ -8,6 +8,7 @@
 <body>
     <script src="client_js/geoScatter.js"></script>
     <script src="client_js/sensorHist.js"></script>
+    <script src="client_js/stddev.js"></script>
     <script>
         // Authored by Julia Santos Nothaft and Patrick Feeney
         async function loadCSV(path, row_conv)
@@ -112,6 +113,7 @@
             updateSensorSelect(data["val_data"]);
             d3.select("#geoDiv").append(() => geographicalPlot(data["agg_data"]));
             d3.select("#histDiv").append(() => sensorHistogram(data["val_data"], "All"));
+            d3.select("#stdDiv").append(() => stdvedgraph(data_std));
         }
 
         main();
@@ -119,5 +121,6 @@
     <select id="sensorSelect" oninput="onSensorSelect()"></select>
     <div id="geoDiv"></div>
     <div id="histDiv"></div>
+    <div id="stdDiv"></div>
 </body>
 </html>
