@@ -23,6 +23,7 @@ async function updateTimeFromBrush()
         start_date = new Date(init_date.setHours(init_date.getHours() + val_range[0]));
         init_date = new Date("2020-04-06T00:00:00");
         end_date = new Date(init_date.setHours(init_date.getHours() + val_range[1]));
+        reloadVis(start_date.toISOString(), end_date.toISOString());
     }
 }
 
@@ -113,21 +114,21 @@ function stdvedgraph(sensorData){
         
     });
 
-    // svg.selectAll("g")
-    //     .data(dataNest)
-    //     .on("mouseover", function(event,d2) {
-    //         div.transition()
-    //         .duration(200)
-    //         .style("opacity", .9);
-    //         div.html(d2[0] + "<br/>")
-    //         .style("left", (event.pageX) + "px")
-    //         .style("top", (event.pageY - 28) + "px");
-    //         })
-    //   .on("mouseout", function(d) {
-    //     div.transition()
-    //       .duration(500)
-    //       .style("opacity", 0);
-    //     });
+    svg.selectAll("g")
+        .data(dataNest)
+        .on("mouseover", function(event,d2) {
+            div.transition()
+            .duration(200)
+            .style("opacity", .9);
+            div.html(d2[0] + "<br/>")
+            .style("left", (event.pageX) + "px")
+            .style("top", (event.pageY - 28) + "px");
+            })
+      .on("mouseout", function(d) {
+        div.transition()
+          .duration(500)
+          .style("opacity", 0);
+        });
 
     return svg.node();
 }
