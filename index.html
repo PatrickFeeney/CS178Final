@@ -17,15 +17,10 @@
             return d3.csvParse(await response.text(), row_conv);
         }
 
-        async function loadData(start_date="2020-04-06T04:00:00", end_date="2020-04-06T08:00:00",
-                                min_val=0, max_val=10000, id=null)
+        async function loadData(start_date="2020-04-06T04:00:00", end_date="2020-04-06T08:00:00")
         {
             data_str = "data?start_date=" + start_date + "&"
-                + "end_date=" + end_date + "&"
-                + "min_val=" + min_val.toString() + "&"
-                + "max_val=" + max_val.toString();
-            if (id != null)
-                data_str += "&tag=" + id;
+                + "end_date=" + end_date;
             const response = await fetch(data_str);
             return response.json();
         }
@@ -64,6 +59,17 @@
             // d3.select("#stdDiv").append(() => stdvedgraph(data_std), selectedTag);;
         }
 
+        async function reloadVis(start_date="2020-04-06T04:00:00", end_date="2020-04-06T08:00:00")
+        {
+            data_promise = loadData(start_date, end_date);
+            data = await data_promise;
+            updateSensorSelect(data["val_data"]);
+            d3.select("#geoDiv").selectAll("*").remove();
+            d3.select("#histDiv").selectAll("*").remove();
+            d3.select("#geoDiv").append(() => geographicalPlot(data["agg_data"]));
+            d3.select("#histDiv").append(() => sensorHistogram(data["val_data"], "All"));
+        }
+
         async function main()
         {
             // load CSVs
@@ -93,7 +99,7 @@
             //         val: parseFloat(d.Value),
             //     }; }
             // );
-            data_promise = loadData();
+            reloadVis();
             static_std_promise = loadCSV("data_processing/StaticSensorSTD.csv",
                 (d) => { return {
                     id: d["Tag"],
@@ -111,10 +117,6 @@
             static_std = await static_std_promise;
             mobile_std = await mobile_std_promise;
             data_std = static_std.concat(mobile_std);
-            data = await data_promise;
-            updateSensorSelect(data["val_data"]);
-            d3.select("#geoDiv").append(() => geographicalPlot(data["agg_data"]));
-            d3.select("#histDiv").append(() => sensorHistogram(data["val_data"], "All"));
             d3.select("#stdDiv").append(() => stdvedgraph(data_std));
         }
 

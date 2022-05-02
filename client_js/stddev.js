@@ -11,15 +11,18 @@ async function updateTimeFromBrush()
             if (val_range[1] - val_range[0] > 4)
             {
                 val_range[1] = val_range[0] + 4;
-                d3.select(".stdbrush").call(brush).call(brush.move,
-                    [sensorSTDXScale(val_range[0]), sensorSTDXScale(val_range[1])]);
             }
         }
         else
         {
-            d3.select(".stdbrush").call(brush).call(brush.move, [sensorSTDXScale(0), sensorSTDXScale(4)])
             val_range = [0, 4];
         }
+        d3.select(".stdbrush").transition().duration(400).call(brush.move,
+            [sensorSTDXScale(val_range[0]), sensorSTDXScale(val_range[1])]);
+        init_date = new Date("2020-04-06T00:00:00");
+        start_date = new Date(init_date.setHours(init_date.getHours() + val_range[0]));
+        init_date = new Date("2020-04-06T00:00:00");
+        end_date = new Date(init_date.setHours(init_date.getHours() + val_range[1]));
     }
 }
 
@@ -110,21 +113,21 @@ function stdvedgraph(sensorData){
         
     });
 
-    svg.selectAll("g")
-        .data(dataNest)
-        .on("mouseover", function(event,d2) {
-            div.transition()
-            .duration(200)
-            .style("opacity", .9);
-            div.html(d2[0] + "<br/>")
-            .style("left", (event.pageX) + "px")
-            .style("top", (event.pageY - 28) + "px");
-            })
-      .on("mouseout", function(d) {
-        div.transition()
-          .duration(500)
-          .style("opacity", 0);
-        });
+    // svg.selectAll("g")
+    //     .data(dataNest)
+    //     .on("mouseover", function(event,d2) {
+    //         div.transition()
+    //         .duration(200)
+    //         .style("opacity", .9);
+    //         div.html(d2[0] + "<br/>")
+    //         .style("left", (event.pageX) + "px")
+    //         .style("top", (event.pageY - 28) + "px");
+    //         })
+    //   .on("mouseout", function(d) {
+    //     div.transition()
+    //       .duration(500)
+    //       .style("opacity", 0);
+    //     });
 
     return svg.node();
 }
