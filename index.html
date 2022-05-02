@@ -60,6 +60,8 @@
             }
             d3.select("#histDiv").selectAll("*").remove();
             d3.select("#histDiv").append(() => sensorHistogram(data["val_data"], selectedTag));
+            // d3.select("#stdDiv").selectAll("*").remove();
+            // d3.select("#stdDiv").append(() => stdvedgraph(data_std), selectedTag);;
         }
 
         async function main()
