@@ -1,6 +1,6 @@
-async function updateGeoFromBrush()
+async function updateTimeFromBrush()
 {
-    var brush_node = d3.select(".brush").node();
+    var brush_node = d3.select(".stdbrush").node();
     if (brush_node != null)
     {
         var selection = d3.brushSelection(brush_node);
@@ -8,14 +8,18 @@ async function updateGeoFromBrush()
         if (selection != null)
         {
             val_range = selection.map(sensorSTDXScale.invert, sensorSTDXScale);
+            if (val_range[1] - val_range[0] > 4)
+            {
+                val_range[1] = val_range[0] + 4;
+                d3.select(".stdbrush").call(brush).call(brush.move,
+                    [sensorSTDXScale(val_range[0]), sensorSTDXScale(val_range[1])]);
+            }
         }
         else
         {
-            d3.select(".brush").call(brush).call(brush.move, sensorSTDXScale.range())
-            val_range = [0, 10000];
+            d3.select(".stdbrush").call(brush).call(brush.move, [sensorSTDXScale(0), sensorSTDXScale(4)])
+            val_range = [0, 4];
         }
-        d3.select("#geoPoints").remove();
-        geographicalPlotPoints(data["agg_data"], d3.select("#geoSVG"), val_range[0], val_range[1]);
     }
 }
 
@@ -31,15 +35,6 @@ function stdvedgraph(sensorData){
     const svg = d3.create("svg")
     .attr("width", width)
     .attr("height", height)
-
-    //  // create view
-    //  const svg = d3.create("svg")
-    //  .attr("width", width)
-    //  .attr("height", height)
-    //  .attr("viewBox", [0, 0, width, height])
-    //  .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
-
-
 
     // delta => { date = new Date("2020-04-06T00:00:00"); date.setHours(date.getHours() + sensorData['DeltaTime']); return date; }
     // create scales and axis
@@ -75,13 +70,13 @@ function stdvedgraph(sensorData){
             .text("Standard Deviation"));
 
     // Initialize brush component
-    const defaultSelection = xScale.range();
+    const defaultSelection = [xScale(0), xScale(4)];
     brush = d3.brushX()
         .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]])
-        .on("end", updateGeoFromBrush);
+        .on("end", updateTimeFromBrush);
     // Append brush component
     gbrush = svg.append("g")
-        .attr("class", "brush")
+        .attr("class", "stdbrush")
         .call(brush)
         .call(brush.move, defaultSelection);
     
@@ -96,27 +91,20 @@ function stdvedgraph(sensorData){
     const linesg = svg.append('g')
 
     const line = d3.line()
-    .x(d => { 
-        // console.log(d)
+    .x(d => {
         const f= xScale(d.dTime);
-        // console.log("x" + f)
         return f})
     .y(d => {
-        // console.log(d)
         const s = yScale(d.std);
-        // console.log("y" + s)
         return s
     })
 
     var color = d3.scaleOrdinal(d3.schemeCategory10).domain(sensorData.map(function(d) { return d.id; }));
     
     dataNest.forEach( function(d,i) {
-        // console.log(i)
         linesg.append('path')
         .attr("d", line(d) )
-        .attr('stroke', d => color(i))//function(d2) {
-            //console.log(color(sensorData))
-            //return color(d2);})
+        .attr('stroke', d => color(i))
         .attr("fill", 'none')
         
         
@@ -125,7 +113,6 @@ function stdvedgraph(sensorData){
     svg.selectAll("g")
         .data(dataNest)
         .on("mouseover", function(event,d2) {
-            console.log(event)
             div.transition()
             .duration(200)
             .style("opacity", .9);
