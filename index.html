@@ -33,8 +33,11 @@
                 tagsSet.add(data[i].id);
             }
             tagsArray = Array.from(tagsSet).sort();
+            tagsArray.splice(0, 0, "All Static");
+            tagsArray.splice(0, 0, "All Mobile");
             tagsArray.splice(0, 0, "All");
             sensorSelect = d3.select("#sensorSelect");
+            sensorSelect.selectAll("*").remove();
             for (i in tagsArray)
             {
                 sensorSelect.append("option").text(tagsArray[i]);
@@ -48,6 +51,16 @@
             {
                 d3.select("#geoPoints").selectAll("path").attr("fill-opacity", 1);
             }
+            else if (selectedTag == "All Mobile")
+            {
+                d3.select("#geoPoints").selectAll("path").attr("fill-opacity",
+                    (d) => d.id.search("Static:") == -1 ? 1 : 0.1);
+            }
+            else if (selectedTag == "All Static")
+            {
+                d3.select("#geoPoints").selectAll("path").attr("fill-opacity",
+                    (d) => d.id.search("Static:") != -1 ? 1 : .1);
+            }
             else
             {
                 d3.select("#geoPoints").selectAll("path").attr("fill-opacity", 0.1);
@@ -55,8 +68,6 @@
             }
             d3.select("#histDiv").selectAll("*").remove();
             d3.select("#histDiv").append(() => sensorHistogram(data["val_data"], selectedTag));
-            // d3.select("#stdDiv").selectAll("*").remove();
-            // d3.select("#stdDiv").append(() => stdvedgraph(data_std), selectedTag);;
         }
 
         async function reloadVis(start_date="2020-04-06T04:00:00", end_date="2020-04-06T08:00:00")
