@@ -78,7 +78,7 @@
             d3.select("#geoDiv").selectAll("*").remove();
             d3.select("#histDiv").selectAll("*").remove();
             d3.select("#geoDiv").append(() => geographicalPlot(data["agg_data"]));
-            d3.select("#histDiv").append(() => sensorHistogram(data["val_data"], "All"));
+            d3.select("#histDiv").append(() => sensorHistogram(data["val_data"], d3.select("#sensorSelect").node().value));
         }
 
         async function main()

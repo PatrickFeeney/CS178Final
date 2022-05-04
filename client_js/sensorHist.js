@@ -16,6 +16,27 @@ async function updateGeoFromBrush()
         }
         d3.select("#geoPoints").remove();
         geographicalPlotPoints(data["agg_data"], d3.select("#geoSVG"), val_range[0], val_range[1]);
+        // update point transparency
+        selectedTag = d3.select("#sensorSelect").node().value;
+        if (selectedTag == "All")
+        {
+            d3.select("#geoPoints").selectAll("path").attr("fill-opacity", 1);
+        }
+        else if (selectedTag == "All Mobile")
+        {
+            d3.select("#geoPoints").selectAll("path").attr("fill-opacity",
+                (d) => d.id.search("Static:") == -1 ? 1 : 0.1);
+        }
+        else if (selectedTag == "All Static")
+        {
+            d3.select("#geoPoints").selectAll("path").attr("fill-opacity",
+                (d) => d.id.search("Static:") != -1 ? 1 : .1);
+        }
+        else
+        {
+            d3.select("#geoPoints").selectAll("path").attr("fill-opacity", 0.1);
+            d3.selectAll("." + selectedTag.replaceAll(":", "\\:")).attr("fill-opacity", 1);
+        }
     }
 }
 

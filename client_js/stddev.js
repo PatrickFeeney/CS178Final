@@ -60,7 +60,7 @@ function stdvedgraph(sensorData){
             .attr("y", 27)
             .attr("fill", "currentColor")
             .attr("text-anchor", "end")
-            .text("Hours after first earthquake"));
+            .text("Hours since start of data"));
 
     svg.append('g')
     //.attr("transform", `translate(${0}, 0)`)
@@ -83,11 +83,6 @@ function stdvedgraph(sensorData){
         .attr("class", "stdbrush")
         .call(brush)
         .call(brush.move, defaultSelection);
-    
-    // initialize tooltip component
-    var div = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
 
     // plot line
     const dataNest = d3.group(sensorData, d => d.id)
@@ -110,25 +105,10 @@ function stdvedgraph(sensorData){
         .attr("d", line(d) )
         .attr('stroke', d => color(i))
         .attr("fill", 'none')
+        .append("title").html(d[0].id);
         
         
     });
-
-    svg.selectAll("g")
-        .data(dataNest)
-        .on("mouseover", function(event,d2) {
-            div.transition()
-            .duration(200)
-            .style("opacity", .9);
-            div.html(d2[0] + "<br/>")
-            .style("left", (event.pageX) + "px")
-            .style("top", (event.pageY - 28) + "px");
-            })
-      .on("mouseout", function(d) {
-        div.transition()
-          .duration(500)
-          .style("opacity", 0);
-        });
 
     return svg.node();
 }
