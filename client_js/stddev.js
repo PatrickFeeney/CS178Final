@@ -46,7 +46,7 @@ function stdvedgraph(sensorData){
     const yScale = d3.scaleLinear().domain(d3.extent(sensorData, d => d.std)).range([margin.top + plot_height, margin.top]);
     const xAxis = d3.axisBottom(xScale).ticks(width / 80).tickSizeOuter(0);
     // const xAxis = d3.axisBottom(xScale).tickValues(delta => { date = new Date("2020-04-06T00:00:00"); date.setHours(date.getHours() + delta); return date; });
-    const yAxis = d3.axisLeft(yScale).tickValues([10, 100, 500, 1000]);
+    const yAxis = d3.axisLeft(yScale).tickValues([100, 500, 1000, 1500, 2000, 2500]);
     
     // create public xScale for brush function
     sensorSTDXScale = xScale;
